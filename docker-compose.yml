@@ -28,6 +28,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      new:
+        aliases:
+          - db
+      legacy:
+        aliases:
+          - postgredb
 
 volumes:
   postgres_data:
+
+networks:
+  new:
+  legacy:
