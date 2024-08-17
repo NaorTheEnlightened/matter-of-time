@@ -4,8 +4,8 @@
     <h1 class="text-3xl font-bold mb-5 text-center">
       {{ isLogin ? 'Login' : 'Register' }}
     </h1>
-    <LoginForm />
-    <RegisterForm />
+    <LoginForm v-if="isLogin" @switch="toggleForm" />
+    <RegisterForm v-else @switch="toggleForm" />
   </div>
 </template>
 
