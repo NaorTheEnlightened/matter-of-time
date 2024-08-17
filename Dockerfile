@@ -19,6 +19,10 @@ RUN npx prisma generate
 # Build the Nuxt application
 RUN npm run build
 
+# Run migrations
+RUN npx prisma migrate deploy
+RUN npx prisma migrate status
+
 # Expose the port the app runs on
 EXPOSE 3000
 
