@@ -1,8 +1,3 @@
-// server/api/desires/[id].js
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
-
 export default defineEventHandler(async (event) => {
   const method = event.req.method;
   const id = parseInt(event.context.params.id);

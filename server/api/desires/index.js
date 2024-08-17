@@ -1,9 +1,7 @@
 // server/api/desires/index.js
-import { PrismaClient } from '@prisma/client';
+
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
-
-const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
   const method = event.req.method;
