@@ -1,7 +1,7 @@
 # Dockerfile
 
 # Use an official Node runtime as the base image
-FROM node:20-alpine
+FROM node:16.20.2
 
 # Set the working directory in the container
 WORKDIR /app
