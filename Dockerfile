@@ -19,12 +19,16 @@ RUN npx prisma generate
 # Build the Nuxt application
 RUN npm run build
 
-# Run migrations
-RUN npx prisma migrate deploy
-RUN npx prisma migrate status
+# Add wait-for-it script
+ADD https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh /app/wait-for-it.sh
+RUN chmod +x /app/wait-for-it.sh
+
+# Copy startup script and make it executable
+COPY startup.sh /app/startup.sh
+RUN chmod +x /app/startup.sh
 
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Set the command to run the app
-CMD ["node", ".output/server/index.mjs"]
+# Set the command to run the startup script
+CMD ["./startup.sh"]

@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.7'
 
 services:
   nuxt-app:
@@ -9,6 +9,7 @@ services:
       - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
     depends_on:
       - db
+    command: ['./startup.sh']
 
   db:
     image: postgres:14-alpine
@@ -18,6 +19,11 @@ services:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=mydatabase
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U user -d mydatabase']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
