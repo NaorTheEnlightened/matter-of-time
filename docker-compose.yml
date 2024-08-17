@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.7'
 
 services:
   matter-of-time:
@@ -6,7 +6,7 @@ services:
     ports:
       - '3000:3000'
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
+      - DATABASE_URL=postgresql://postgres:root@localhost:5432/MVPs?schema=matter-of-time
     depends_on:
       db:
         condition: service_healthy
@@ -18,13 +18,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=mydatabase
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=MVPs
     ports:
       - '5432:5432'
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U user -d mydatabase']
+      test: ['CMD-SHELL', 'pg_isready -U user -d postgres']
       interval: 10s
       timeout: 5s
       retries: 5
