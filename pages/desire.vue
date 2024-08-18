@@ -30,6 +30,11 @@
               class="text-left flex-grow hover:text-blue-500"
             >
               {{ desire.title }}
+              <span
+                v-if="isDesireCompleted(desire)"
+                class="text-green-500 ml-2"
+                >✓</span
+              >
             </button>
             <div class="flex items-center">
               <button
@@ -90,47 +95,107 @@
 
         <div v-if="!isEditing" class="flex justify-between space-x-4">
           <!-- New Image Column -->
-          <div class="w-1/3">
+          <div class="w-1/3 relative">
             <h3 class="text-xl font-semibold mb-2">Desire Image</h3>
-            <img
-              v-if="selectedDesire.image"
-              :src="selectedDesire.image"
-              alt="Desire image"
-              class="w-full h-auto max-h-60 object-cover rounded-lg shadow-md"
-            />
-            <p v-else class="text-gray-500 italic">No image available</p>
+            <div
+              class="relative inline-block"
+              @mouseenter="isHoveringImage = false"
+              @mouseleave="isHoveringImage = false"
+            >
+              <img
+                v-if="selectedDesire.image"
+                :src="selectedDesire.image"
+                alt="Desire image"
+                class="w-full h-auto max-h-60 object-cover rounded-lg shadow-md cursor-help"
+              />
+              <p v-else class="text-gray-500 italic cursor-help">
+                No image available
+              </p>
+              <div
+                v-if="isHoveringImage"
+                class="absolute z-10 w-64 p-2 mt-2 text-sm leading-tight text-white bg-black rounded-lg shadow-lg"
+                style="
+                  left: 50%;
+                  transform: translateX(-50%);
+                  bottom: -60px;
+                "
+              >
+                <p>
+                  Can you map all objects and forces needed for this to be
+                  done?
+                </p>
+              </div>
+            </div>
           </div>
 
           <!-- Existing Time Column -->
-          <div class="w-1/3 text-center">
+          <div class="w-1/3 text-center relative">
             <h3 class="text-xl font-semibold mb-2">Time</h3>
             <div
-              class="clock-face border-4 border-gray-300 rounded-full w-32 h-32 relative mx-auto"
+              class="relative inline-block"
+              @mouseenter="isHoveringTime = false"
+              @mouseleave="isHoveringTime = false"
             >
-              <!-- Clock hands -->
-              <div class="hand hour-hand" :style="hourHandStyle"></div>
-              <div class="hand minute-hand" :style="minuteHandStyle"></div>
+              <div
+                class="clock-face border-4 border-gray-300 rounded-full w-32 h-32 relative mx-auto cursor-help"
+              >
+                <!-- Clock hands -->
+                <div class="hand hour-hand" :style="hourHandStyle"></div>
+                <div
+                  class="hand minute-hand"
+                  :style="minuteHandStyle"
+                ></div>
+              </div>
+              <p class="mt-2">{{ formattedTime }}</p>
+              <div
+                v-if="isHoveringTime"
+                class="absolute z-10 w-64 p-2 mt-2 text-sm leading-tight text-white bg-black rounded-lg shadow-lg"
+                style="left: 50%; transform: translateX(-50%)"
+              >
+                <p>Does it reduce time to 0s?</p>
+              </div>
             </div>
-            <p class="mt-2">{{ formattedTime }}</p>
           </div>
 
           <!-- Existing Probability Column -->
-          <div class="w-1/3 text-center">
+          <div class="w-1/3 text-center relative">
             <h3 class="text-xl font-semibold mb-2">
               Opposite Outcome Probability
             </h3>
-            <p class="text-4xl font-bold">
-              {{ oppositeOutcomeProbability }}%
-            </p>
-            <ul class="mt-4 text-left">
-              <li
-                v-for="(tool, index) in selectedDesire.tools"
-                :key="index"
-                class="mb-2"
+            <div
+              class="relative inline-block"
+              @mouseenter="isHoveringProbability = false"
+              @mouseleave="isHoveringProbability = false"
+            >
+              <p class="text-4xl font-bold cursor-help">
+                {{ oppositeOutcomeProbability }}%
+              </p>
+              <div
+                v-if="isHoveringProbability"
+                class="absolute z-10 w-64 p-2 mt-2 text-sm leading-tight text-white bg-black rounded-lg shadow-lg"
+                style="left: 50%; transform: translateX(-50%)"
               >
-                {{ tool.name }}: {{ tool.probability }}%
-              </li>
-            </ul>
+                <p>
+                  Which tools or forces will correspond in a perfect 0%
+                  probability of an opposite outcome to this desire?
+                </p>
+              </div>
+            </div>
+            <div v-if="hasTools" class="mt-4">
+              <h4 class="text-lg font-semibold mb-2">Tools:</h4>
+              <ul class="text-left">
+                <li
+                  v-for="(tool, index) in selectedDesire.tools"
+                  :key="index"
+                  class="mb-2"
+                >
+                  {{ tool.name }}: {{ tool.probability }}%
+                </li>
+              </ul>
+            </div>
+            <div v-else class="mt-4 text-red-500">
+              <span class="text-2xl mr-2">✗</span> None specified
+            </div>
           </div>
         </div>
 
@@ -269,6 +334,9 @@ import { useDesireStore } from '~/stores/desire';
 import { useUserStore } from '~/stores/user';
 import { storeToRefs } from 'pinia';
 
+const isHoveringProbability = ref(false);
+const isHoveringTime = ref(false);
+const isHoveringImage = ref(false);
 const desireStore = useDesireStore();
 const userStore = useUserStore();
 const { desires, loading, error } = storeToRefs(desireStore);
@@ -372,6 +440,16 @@ const formattedTime = computed(() => {
   return `${timeDays}d ${timeHours}h ${timeMinutes}m`;
 });
 
+const isDesireCompleted = (desire) => {
+  const totalTime =
+    desire.timeDays * 24 * 60 + desire.timeHours * 60 + desire.timeMinutes;
+  const totalProbability = desire.tools.reduce(
+    (sum, tool) => sum + tool.probability,
+    0,
+  );
+  return totalTime === 0 || totalProbability >= 100;
+};
+
 const isCompleted = computed(() => {
   if (!selectedDesire.value) return false;
   const { timeDays, timeHours, timeMinutes, tools } = selectedDesire.value;
@@ -381,6 +459,10 @@ const isCompleted = computed(() => {
     0,
   );
   return totalTime === 0 || totalProbability >= 100;
+});
+
+const hasTools = computed(() => {
+  return selectedDesire.value && selectedDesire.value.tools.length > 0;
 });
 
 const hourHandStyle = computed(() => {
