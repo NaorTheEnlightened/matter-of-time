@@ -25,6 +25,25 @@ export const useDesireStore = defineStore('desire', {
       this.error = null;
       this.dataFetched = false;
     },
+    async fetchDesire(id) {
+      const userStore = useUserStore();
+      if (!userStore.isLoggedIn) throw new Error('User not authenticated');
+
+      try {
+        const { data, error } = await useFetch(`/api/desires/${id}`, {
+          headers: userStore.getToken
+            ? { Authorization: `Bearer ${userStore.getToken}` }
+            : {},
+        });
+        if (error.value) {
+          throw new Error(error.value.message);
+        }
+        return data.value;
+      } catch (error) {
+        console.error('Error fetching desire:', error);
+        throw error;
+      }
+    },
     async fetchDesires() {
       const userStore = useUserStore();
       if (!userStore.isLoggedIn) {
@@ -42,7 +61,12 @@ export const useDesireStore = defineStore('desire', {
         if (error.value) {
           throw new Error(error.value.message);
         }
-        this.desires = data.value;
+        // Add null check here
+        if (data.value === null) {
+          this.desires = [];
+        } else {
+          this.desires = data.value;
+        }
         this.dataFetched = true;
       } catch (error) {
         console.error('Error fetching desires:', error);
@@ -60,35 +84,54 @@ export const useDesireStore = defineStore('desire', {
       if (!userStore.isLoggedIn) throw new Error('User not authenticated');
 
       try {
-        const { data } = await useFetch('/api/desires', {
+        const { data, error } = await useFetch('/api/desires', {
           method: 'POST',
-          body: desire,
-          headers: { Authorization: `Bearer ${userStore.getToken}` },
+          body: JSON.stringify(desire),
+          headers: {
+            Authorization: `Bearer ${userStore.getToken}`,
+            'Content-Type': 'application/json',
+          },
         });
-        this.desires.push(data.value);
-        return data.value;
+
+        if (error.value) {
+          throw new Error(error.value.message || 'Failed to add desire');
+        }
+
+        if (data.value) {
+          this.desires.push(data.value);
+          return data.value;
+        } else {
+          throw new Error('Failed to add desire: No data returned');
+        }
       } catch (error) {
         console.error('Error adding desire:', error);
         throw error;
       }
     },
     async updateDesire(id, updates) {
-      try {
-        const userId = this.getUserId();
-        if (!userId) throw new Error('User not authenticated');
+      const userStore = useUserStore();
+      if (!userStore.isLoggedIn) throw new Error('User not authenticated');
 
+      try {
         const { data, error } = await useFetch(`/api/desires/${id}`, {
           method: 'PUT',
           body: updates,
-          headers: { 'user-id': userId.toString() },
+          headers: {
+            Authorization: `Bearer ${userStore.getToken}`,
+            'Content-Type': 'application/json',
+          },
         });
+
         if (error.value) {
           throw new Error(error.value.message);
         }
+
         const index = this.desires.findIndex((d) => d.id === id);
         if (index !== -1) {
           this.desires[index] = data.value;
         }
+
+        return data.value;
       } catch (error) {
         console.error('Error updating desire:', error);
         this.error = error.message;
@@ -96,18 +139,25 @@ export const useDesireStore = defineStore('desire', {
       }
     },
     async deleteDesire(id) {
+      const userStore = useUserStore();
+      if (!userStore.isLoggedIn) throw new Error('User not authenticated');
       try {
-        const userId = this.getUserId();
-        if (!userId) throw new Error('User not authenticated');
-
-        const { error } = await useFetch(`/api/desires/${id}`, {
+        const { data, error } = await useFetch(`/api/desires/${id}`, {
           method: 'DELETE',
-          headers: { 'user-id': userId.toString() },
+          headers: { Authorization: `Bearer ${userStore.getToken}` },
         });
+
         if (error.value) {
-          throw new Error(error.value.message);
+          throw new Error(
+            error.value.data.message || 'Failed to delete desire',
+          );
         }
-        this.desires = this.desires.filter((d) => d.id !== id);
+
+        if (data.value && data.value.success) {
+          this.desires = this.desires.filter((d) => d.id !== id);
+        } else {
+          throw new Error('Failed to delete desire');
+        }
       } catch (error) {
         console.error('Error deleting desire:', error);
         this.error = error.message;

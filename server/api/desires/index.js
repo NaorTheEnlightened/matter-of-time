@@ -25,27 +25,40 @@ export default defineEventHandler(async (event) => {
   }
 
   if (method === 'GET') {
-    // If no userId is provided, return an empty array or public desires
-    if (!userId) {
-      console.log(
-        'No authenticated user, returning public desires or empty array',
-      );
-      return []; // or return public desires if you have any
+    try {
+      const desires = await prisma.desire.findMany({
+        where: { userId: parseInt(userId) },
+        include: {
+          tools: {
+            include: {
+              atomPlacements: {
+                include: {
+                  forces: true,
+                },
+              },
+              hypothesis: true,
+            },
+          },
+        },
+      });
+
+      return desires.map((desire) => ({
+        ...desire,
+        tools: desire.tools.map((tool) => ({
+          ...tool,
+          probability: Number(tool.probability), // Ensure probability is a number
+        })),
+      }));
+    } catch (error) {
+      console.error('Error fetching desires:', error);
+      return createError({
+        statusCode: 500,
+        statusMessage: 'Failed to fetch desires',
+      });
     }
-    const desires = await prisma.desire.findMany({
-      where: { userId: parseInt(userId) },
-    });
-    return desires;
   }
 
   if (method === 'POST') {
-    if (!userId) {
-      return createError({
-        statusCode: 401,
-        statusMessage: 'Unauthorized: User not authenticated',
-      });
-    }
-
     try {
       const body = await readBody(event);
       console.log('Received body:', body);
@@ -71,14 +84,53 @@ export default defineEventHandler(async (event) => {
         timeDays: Number(body.timeDays) || 0,
         timeHours: Number(body.timeHours) || 0,
         timeMinutes: Number(body.timeMinutes) || 0,
-        tools: body.tools || [], // Ensure tools is always an array
         userId: parseInt(userId),
+        tools: {
+          create: (body.tools || []).map((tool) => ({
+            name: tool.name || '',
+            probability: Number(tool.probability) || 0,
+            atomPlacements: {
+              create: (tool.atomPlacements || []).map((ap) => ({
+                beginning: ap.beginning || '',
+                end: ap.end || '',
+                forces: {
+                  create: (ap.forces || []).map((force) => ({
+                    description:
+                      typeof force.description === 'object'
+                        ? force.description.description || ''
+                        : force.description || '',
+                  })),
+                },
+              })),
+            },
+            hypothesis: tool.hypothesis
+              ? {
+                  create: {
+                    description: tool.hypothesis.description || '',
+                    isSuccessful: tool.hypothesis.isSuccessful || false,
+                  },
+                }
+              : undefined,
+          })),
+        },
       };
 
       console.log('Processed desire data:', desireData);
 
       const desire = await prisma.desire.create({
         data: desireData,
+        include: {
+          tools: {
+            include: {
+              atomPlacements: {
+                include: {
+                  forces: true,
+                },
+              },
+              hypothesis: true,
+            },
+          },
+        },
       });
       return desire;
     } catch (error) {

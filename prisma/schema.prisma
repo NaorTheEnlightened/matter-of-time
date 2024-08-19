@@ -31,9 +31,43 @@ model Desire {
   timeDays     Int
   timeHours    Int
   timeMinutes  Int
-  tools        Json?    // This will store the array of tools
+  tools        Tool[]
   userId       Int
   user         User     @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Tool {
+  id              Int      @id @default(autoincrement())
+  name            String
+  probability     Float
+  atomPlacements  AtomPlacement[]
+  hypothesis      Hypothesis?
+  desireId        Int
+  desire          Desire   @relation(fields: [desireId], references: [id])
+}
+
+model AtomPlacement {
+  id        Int     @id @default(autoincrement())
+  beginning String
+  end       String
+  forces    Force[]
+  toolId    Int
+  tool      Tool    @relation(fields: [toolId], references: [id])
+}
+
+model Force {
+  id               Int           @id @default(autoincrement())
+  description      String
+  atomPlacementId  Int
+  atomPlacement    AtomPlacement @relation(fields: [atomPlacementId], references: [id])
+}
+
+model Hypothesis {
+  id          Int     @id @default(autoincrement())
+  description String
+  isSuccessful Boolean @default(false)
+  toolId      Int     @unique
+  tool        Tool    @relation(fields: [toolId], references: [id])
 }

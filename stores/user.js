@@ -18,7 +18,9 @@ export const useUserStore = defineStore('user', {
     },
     setToken(token) {
       this.token = token;
-      localStorage.setItem('token', token);
+      if (process.client) {
+        localStorage.setItem('token', token);
+      }
     },
     clearUser() {
       this.user = null;

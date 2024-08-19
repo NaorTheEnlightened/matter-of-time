@@ -22,7 +22,7 @@
         <ul>
           <li
             v-for="desire in desires"
-            :key="desire.id"
+            :key="desire?.id"
             class="mb-2 flex items-center justify-between bg-white p-2 rounded-lg shadow-sm"
           >
             <button
@@ -30,9 +30,7 @@
               class="text-left flex-grow hover:text-blue-500"
             >
               {{ desire.title }}
-              <span
-                v-if="isDesireCompleted(desire)"
-                class="text-green-500 ml-2"
+              <span v-if="isDesireCompleted" class="text-green-500 ml-2"
                 >✓</span
               >
             </button>
@@ -93,145 +91,264 @@
           {{ isEditing ? 'View Mode' : 'Edit Mode' }}
         </button>
 
-        <div v-if="!isEditing" class="flex justify-between space-x-4">
-          <!-- New Image Column -->
-          <div class="w-1/3 relative">
-            <h3 class="text-xl font-semibold mb-2">Desire Image</h3>
-            <div
-              class="relative inline-block"
-              @mouseenter="isHoveringImage = false"
-              @mouseleave="isHoveringImage = false"
-            >
-              <img
-                v-if="selectedDesire.image"
-                :src="selectedDesire.image"
-                alt="Desire image"
-                class="w-full h-auto max-h-60 object-cover rounded-lg shadow-md cursor-help"
-              />
-              <p v-else class="text-gray-500 italic cursor-help">
-                No image available
-              </p>
+        <div v-if="!isEditing" class="flex flex-col space-y-8">
+          <div class="flex justify-between space-x-4">
+            <!-- Desire Image Column -->
+            <div class="w-1/3 relative">
+              <h3 class="text-xl font-semibold mb-2">Desire Image</h3>
               <div
-                v-if="isHoveringImage"
-                class="absolute z-10 w-64 p-2 mt-2 text-sm leading-tight text-white bg-black rounded-lg shadow-lg"
-                style="
-                  left: 50%;
-                  transform: translateX(-50%);
-                  bottom: -60px;
-                "
+                class="relative inline-block"
+                @mouseenter="isHoveringImage = false"
+                @mouseleave="isHoveringImage = false"
               >
-                <p>
-                  Can you map all objects and forces needed for this to be
-                  done?
+                <img
+                  v-if="selectedDesire.image"
+                  :src="selectedDesire.image"
+                  alt="Desire image"
+                  class="w-full h-auto max-h-60 object-cover rounded-lg shadow-md cursor-help"
+                />
+                <p v-else class="text-gray-500 italic cursor-help">
+                  No image available
                 </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Existing Time Column -->
-          <div class="w-1/3 text-center relative">
-            <h3 class="text-xl font-semibold mb-2">Time</h3>
-            <div
-              class="relative inline-block"
-              @mouseenter="isHoveringTime = false"
-              @mouseleave="isHoveringTime = false"
-            >
-              <div
-                class="clock-face border-4 border-gray-300 rounded-full w-32 h-32 relative mx-auto cursor-help"
-              >
-                <!-- Clock hands -->
-                <div class="hand hour-hand" :style="hourHandStyle"></div>
                 <div
-                  class="hand minute-hand"
-                  :style="minuteHandStyle"
-                ></div>
-              </div>
-              <p class="mt-2">{{ formattedTime }}</p>
-              <div
-                v-if="isHoveringTime"
-                class="absolute z-10 w-64 p-2 mt-2 text-sm leading-tight text-white bg-black rounded-lg shadow-lg"
-                style="left: 50%; transform: translateX(-50%)"
-              >
-                <p>Does it reduce time to 0s?</p>
+                  v-if="isHoveringImage"
+                  class="absolute z-10 w-64 p-2 mt-2 text-sm leading-tight text-white bg-black rounded-lg shadow-lg"
+                  style="
+                    left: 50%;
+                    transform: translateX(-50%);
+                    bottom: -60px;
+                  "
+                >
+                  <p>
+                    Can you map all objects and forces needed for this to
+                    be done?
+                  </p>
+                </div>
               </div>
             </div>
-            <!-- New arrow and text -->
-            <div class="mt-2">
-              <svg
-                class="w-4 h-4 mx-auto"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+
+            <!-- Time Column -->
+            <div class="w-1/3 text-center relative">
+              <h3 class="text-xl font-semibold mb-2">Time</h3>
+              <div
+                class="relative inline-block"
+                @mouseenter="isHoveringTime = false"
+                @mouseleave="isHoveringTime = false"
               >
-                <path
-                  d="M12 4v16m0 0l-4-4m4 4l4-4"
-                  stroke="black"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              <p class="text-sm font-semibold">0s</p>
+                <div
+                  class="clock-face border-4 border-gray-300 rounded-full w-32 h-32 relative mx-auto cursor-help"
+                >
+                  <div class="hand hour-hand" :style="hourHandStyle"></div>
+                  <div
+                    class="hand minute-hand"
+                    :style="minuteHandStyle"
+                  ></div>
+                </div>
+                <p class="mt-2">{{ formattedTime }}</p>
+                <div
+                  v-if="isHoveringTime"
+                  class="absolute z-10 w-64 p-2 mt-2 text-sm leading-tight text-white bg-black rounded-lg shadow-lg"
+                  style="left: 50%; transform: translateX(-50%)"
+                >
+                  <p>Does it reduce time to 0s?</p>
+                </div>
+              </div>
+              <div class="mt-2">
+                <svg
+                  class="w-4 h-4 mx-auto"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 4v16m0 0l-4-4m4 4l4-4"
+                    stroke="black"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <p class="text-sm font-semibold">0s</p>
+              </div>
+            </div>
+
+            <!-- Opposite Outcome Probability Column -->
+            <div class="w-1/3 text-center relative">
+              <h3 class="text-xl font-semibold mb-2">
+                Opposite Outcome Probability
+              </h3>
+              <div
+                class="relative inline-block"
+                @mouseenter="isHoveringProbability = false"
+                @mouseleave="isHoveringProbability = false"
+              >
+                <p class="text-4xl font-bold cursor-help">
+                  {{ oppositeOutcomeProbability }}%
+                </p>
+                <div
+                  v-if="isHoveringProbability"
+                  class="absolute z-10 w-64 p-2 mt-2 text-sm leading-tight text-white bg-black rounded-lg shadow-lg"
+                  style="left: 50%; transform: translateX(-50%)"
+                >
+                  <p>
+                    Which tools or forces will correspond in a perfect 0%
+                    probability of an opposite outcome to this desire?
+                  </p>
+                </div>
+              </div>
+              <div
+                v-if="
+                  selectedDesire &&
+                  selectedDesire.tools &&
+                  selectedDesire.tools.length > 0
+                "
+                class="mt-4"
+              >
+                <h4 class="text-lg font-semibold mb-2">Tools:</h4>
+                <ul class="text-left">
+                  <li
+                    v-for="(tool, index) in selectedDesire.tools"
+                    :key="index"
+                    class="mb-2 text-xs inline-flex items-center"
+                  >
+                    <button
+                      @click="selectTool(tool)"
+                      class="mr-2 text-blue-500 hover:text-blue-700"
+                    >
+                      {{ tool.name }}:
+                    </button>
+                    <p class="font-bold px-3">
+                      {{ tool.probability || 0 }}%
+                    </p>
+                  </li>
+                </ul>
+              </div>
+              <div v-else class="mt-4 text-red-500">
+                <span class="text-2xl mr-2">✗</span> Unspecified
+              </div>
+              <div class="mt-2">
+                <svg
+                  class="w-4 h-4 mx-auto"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 4v16m0 0l-4-4m4 4l4-4"
+                    stroke="black"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <p class="text-sm font-semibold">0% oop</p>
+              </div>
             </div>
           </div>
 
-          <!-- Existing Probability Column -->
-          <div class="w-1/3 text-center relative">
-            <h3 class="text-xl font-semibold mb-2">
-              Opposite Outcome Probability
-            </h3>
-            <div
-              class="relative inline-block"
-              @mouseenter="isHoveringProbability = false"
-              @mouseleave="isHoveringProbability = false"
-            >
-              <p class="text-4xl font-bold cursor-help">
-                {{ oppositeOutcomeProbability }}%
-              </p>
-              <div
-                v-if="isHoveringProbability"
-                class="absolute z-10 w-64 p-2 mt-2 text-sm leading-tight text-white bg-black rounded-lg shadow-lg"
-                style="left: 50%; transform: translateX(-50%)"
-              >
-                <p>
-                  Which tools or forces will correspond in a perfect 0%
-                  probability of an opposite outcome to this desire?
-                </p>
+          <!-- Question Of Forces section -->
+          <div v-if="selectedTool" class="mt-8">
+            <h3 class="text-xl font-semibold mb-4">Question Of Forces</h3>
+            <div class="flex justify-between space-x-4">
+              <div class="w-2/3 border border-black p-4">
+                <div class="flex justify-between space-x-4">
+                  <!-- Beginning and End Atoms Placement -->
+                  <div class="w-1/2">
+                    <h4 class="text-lg font-semibold mb-2">
+                      Beginning and End Atoms Placement
+                    </h4>
+                    <ul>
+                      <li
+                        v-for="(
+                          placement, index
+                        ) in selectedTool.atomPlacements"
+                        :key="index"
+                        class="mb-2"
+                      >
+                        <div class="flex justify-between items-center">
+                          <span
+                            >{{ placement.beginning }} →
+                            {{ placement.end }}</span
+                          >
+                          <button
+                            @click="selectAtomPlacement(index)"
+                            class="text-blue-500 hover:text-blue-700"
+                          >
+                            Select
+                          </button>
+                        </div>
+                      </li>
+                    </ul>
+                    <button
+                      @click="addAtomPlacement"
+                      class="bg-green-500 text-white px-2 py-1 rounded mt-2"
+                    >
+                      Add Placement
+                    </button>
+                  </div>
+
+                  <!-- Forces -->
+                  <div class="w-1/2">
+                    <h4 class="text-lg font-semibold mb-2">Forces</h4>
+                    <div v-if="selectedAtomPlacementIndex !== null">
+                      <ul>
+                        <li
+                          v-for="(force, index) in selectedTool
+                            .atomPlacements[selectedAtomPlacementIndex]
+                            .forces"
+                          :key="index"
+                          class="mb-2"
+                        >
+                          {{ force.description }}
+                        </li>
+                      </ul>
+                      <input
+                        v-model="newForce"
+                        placeholder="New force"
+                        class="border p-2 w-full mb-2"
+                      />
+                      <button
+                        @click="addForce"
+                        class="bg-blue-500 text-white px-2 py-1 rounded"
+                      >
+                        Add Force
+                      </button>
+                    </div>
+                    <p v-else class="text-gray-500 italic">
+                      Select an atom placement to add forces
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div v-if="hasTools" class="mt-4">
-              <h4 class="text-lg font-semibold mb-2">Tools:</h4>
-              <ul class="text-left">
-                <li
-                  v-for="(tool, index) in selectedDesire.tools"
-                  :key="index"
-                  class="mb-2 text-xs inline-flex"
+
+              <!-- Testable Hypothesis -->
+              <div class="w-1/3">
+                <h4 class="text-lg font-semibold mb-2">
+                  Testable Hypothesis
+                </h4>
+                <textarea
+                  v-model="hypothesis"
+                  placeholder="Enter your hypothesis"
+                  class="border p-2 w-full h-32 mb-2"
+                ></textarea>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    v-model="hypothesisSuccess"
+                    id="hypothesisSuccess"
+                    class="mr-2"
+                  />
+                  <label for="hypothesisSuccess"
+                    >Hypothesis succeeded</label
+                  >
+                </div>
+                <button
+                  @click="saveHypothesis"
+                  class="bg-green-500 text-white px-2 py-1 rounded mt-2"
                 >
-                  {{ tool.name }}:
-                  <p class="font-bold px-3">{{ tool.probability }}%</p>
-                </li>
-              </ul>
-            </div>
-            <div v-else class="mt-4 text-red-500">
-              <span class="text-2xl mr-2">✗</span> Unspecified
-            </div>
-            <!-- New arrow and text -->
-            <div class="mt-2">
-              <svg
-                class="w-4 h-4 mx-auto"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 4v16m0 0l-4-4m4 4l4-4"
-                  stroke="black"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              <p class="text-sm font-semibold">0% oop</p>
+                  Save Hypothesis
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -242,118 +359,207 @@
             <p>Saving changes...</p>
           </div>
           <div v-else>
-            <div class="mb-4">
-              <label class="block mb-2">Title:</label>
-              <input
-                v-model="selectedDesire.title"
-                type="text"
-                class="border p-2 w-full"
-              />
+            <!-- Edit mode content -->
+            <div v-if="editLoading" class="text-center py-4">
+              <p>Saving changes...</p>
             </div>
-
-            <div class="mb-4">
-              <label class="block mb-2">Image:</label>
-              <div class="flex items-center">
+            <div v-else>
+              <div class="mb-4">
+                <label class="block mb-2">Title:</label>
                 <input
-                  v-model="selectedDesire.image"
+                  v-model="selectedDesire.title"
                   type="text"
-                  class="border p-2 w-full mr-2"
-                  placeholder="Image URL"
-                />
-                <span class="mr-2">OR</span>
-                <input
-                  type="file"
-                  @change="handleFileUpload"
-                  accept="image/*"
-                  class="border p-2"
+                  class="border p-2 w-full"
                 />
               </div>
-            </div>
 
-            <img
-              v-if="selectedDesire.image"
-              :src="selectedDesire.image"
-              alt="Desire image"
-              class="mb-4 max-w-md"
-            />
-
-            <div class="mb-4">
-              <label class="block mb-2">Time:</label>
-              <input
-                v-model.number="selectedDesire.timeDays"
-                type="number"
-                class="border p-2 mr-2"
-                min="0"
-              />
-              Days
-              <input
-                v-model.number="selectedDesire.timeHours"
-                type="number"
-                class="border p-2 mr-2 ml-2"
-                min="0"
-                max="23"
-              />
-              Hours
-              <input
-                v-model.number="selectedDesire.timeMinutes"
-                type="number"
-                class="border p-2 mr-2 ml-2"
-                min="0"
-                max="59"
-              />
-              Minutes
-            </div>
-
-            <div class="mb-4">
-              <label class="block mb-2">Tools:</label>
-              <ul>
-                <li
-                  v-for="(tool, index) in selectedDesire.tools"
-                  :key="index"
-                  class="mb-2"
-                >
+              <div class="mb-4">
+                <label class="block mb-2">Image:</label>
+                <div class="flex items-center">
                   <input
-                    v-model="tool.name"
+                    v-model="selectedDesire.image"
                     type="text"
-                    class="border p-2 mr-2"
-                    placeholder="Tool name"
+                    class="border p-2 w-full mr-2"
+                    placeholder="Image URL"
                   />
+                  <span class="mr-2">OR</span>
                   <input
-                    v-model.number="tool.probability"
-                    type="number"
-                    class="border p-2 mr-2"
-                    min="0"
-                    max="100"
+                    type="file"
+                    @change="handleFileUpload"
+                    accept="image/*"
+                    class="border p-2"
                   />
-                  %
-                  <button
-                    @click="removeTool(index)"
-                    class="bg-red-500 text-white px-2 py-1 rounded"
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="block mb-2">Time:</label>
+                <input
+                  v-model.number="selectedDesire.timeDays"
+                  type="number"
+                  class="border p-2 mr-2"
+                  min="0"
+                />
+                Days
+                <input
+                  v-model.number="selectedDesire.timeHours"
+                  type="number"
+                  class="border p-2 mr-2 ml-2"
+                  min="0"
+                  max="23"
+                />
+                Hours
+                <input
+                  v-model.number="selectedDesire.timeMinutes"
+                  type="number"
+                  class="border p-2 mr-2 ml-2"
+                  min="0"
+                  max="59"
+                />
+                Minutes
+              </div>
+
+              <div class="mb-4">
+                <label class="block mb-2">Tools:</label>
+                <ul>
+                  <li
+                    v-for="(tool, index) in selectedDesire.tools"
+                    :key="index"
+                    class="mb-4 border p-4"
                   >
-                    Remove
-                  </button>
-                </li>
-              </ul>
+                    <input
+                      v-model="tool.name"
+                      type="text"
+                      class="border p-2 mr-2"
+                      placeholder="Tool name"
+                    />
+                    <input
+                      v-model.number="tool.probability"
+                      type="number"
+                      class="border p-2 mr-2"
+                      min="0"
+                      max="100"
+                    />
+                    %
+                    <button
+                      @click="removeTool(index)"
+                      class="bg-red-500 text-white px-2 py-1 rounded"
+                    >
+                      Remove
+                    </button>
+
+                    <div class="mt-2">
+                      <h5 class="font-semibold">Atom Placements:</h5>
+                      <ul>
+                        <li
+                          v-for="(
+                            placement, pIndex
+                          ) in tool.atomPlacements"
+                          :key="pIndex"
+                          class="mb-2"
+                        >
+                          <input
+                            v-model="placement.beginning"
+                            type="text"
+                            class="border p-2 mr-2"
+                            placeholder="Beginning"
+                          />
+                          <input
+                            v-model="placement.end"
+                            type="text"
+                            class="border p-2 mr-2"
+                            placeholder="End"
+                          />
+                          <button
+                            @click="removeAtomPlacement(tool, pIndex)"
+                            class="bg-red-500 text-white px-2 py-1 rounded"
+                          >
+                            Remove
+                          </button>
+
+                          <div class="ml-4 mt-2">
+                            <h6 class="font-semibold">Forces:</h6>
+                            <ul>
+                              <li
+                                v-for="(force, fIndex) in placement.forces"
+                                :key="fIndex"
+                                class="mb-2"
+                              >
+                                <input
+                                  v-model="
+                                    placement.forces[fIndex].description
+                                  "
+                                  type="text"
+                                  class="border p-2 mr-2"
+                                  placeholder="Force"
+                                />
+                                <button
+                                  @click="removeForce(placement, fIndex)"
+                                  class="bg-red-500 text-white px-2 py-1 rounded"
+                                >
+                                  Remove
+                                </button>
+                              </li>
+                            </ul>
+                            <button
+                              @click="addForce(placement)"
+                              class="bg-green-500 text-white px-2 py-1 rounded mt-2"
+                            >
+                              Add Force
+                            </button>
+                          </div>
+                        </li>
+                      </ul>
+                      <button
+                        @click="addAtomPlacement(tool)"
+                        class="bg-green-500 text-white px-2 py-1 rounded mt-2"
+                      >
+                        Add Atom Placement
+                      </button>
+                    </div>
+
+                    <div class="mt-2">
+                      <h5 class="font-semibold">Hypothesis:</h5>
+                      <textarea
+                        v-model="tool.hypothesis.description"
+                        class="border p-2 w-full h-32 mb-2"
+                        placeholder="Enter hypothesis"
+                      ></textarea>
+                      <div class="flex items-center">
+                        <input
+                          type="checkbox"
+                          v-model="tool.hypothesis.isSuccessful"
+                          :id="`hypothesis-${index}`"
+                          class="mr-2"
+                        />
+                        <label :for="`hypothesis-${index}`"
+                          >Hypothesis succeeded</label
+                        >
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+                <button
+                  @click="addTool"
+                  class="bg-green-500 text-white px-2 py-1 rounded mt-2"
+                >
+                  Add Tool
+                </button>
+              </div>
+
               <button
-                @click="addTool"
-                class="bg-green-600 text-white px-4 py-2 rounded mt-2"
+                @click="saveDesire"
+                class="bg-blue-500 text-white px-4 py-2 rounded mr-2"
               >
-                Add Tool
+                Save
+              </button>
+              <button
+                @click="cancelEdit"
+                class="bg-gray-500 text-white px-4 py-2 rounded"
+              >
+                Cancel
               </button>
             </div>
-
-            <button
-              @click="saveDesire"
-              class="bg-green-500 text-white px-4 py-2 rounded mr-2"
-            >
-              Save
-            </button>
-            <button
-              @click="deleteDesire"
-              class="bg-red-500 text-white px-4 py-2 rounded"
-            >
-              Delete
-            </button>
           </div>
         </div>
       </div>
@@ -380,6 +586,260 @@ const { isLoggedIn } = storeToRefs(userStore);
 const selectedDesire = ref(null);
 const isEditing = ref(false);
 const editLoading = ref(false);
+const selectedTool = ref(null);
+const atomPlacements = ref([]);
+const selectedAtomPlacementIndex = ref(null);
+const forces = ref({});
+const newForce = ref('');
+const hypothesis = ref('');
+const hypothesisSuccess = ref(false);
+
+const hasDesires = computed(
+  () => desires.value && desires.value.length > 0,
+);
+
+const oppositeOutcomeProbability = computed(() => {
+  if (!selectedDesire.value || !selectedDesire.value.tools) return 100;
+  const totalProbability = selectedDesire.value.tools.reduce(
+    (sum, tool) => sum + (tool.probability || 0),
+    0,
+  );
+  return Math.max(0, 100 - totalProbability);
+});
+
+const isDesireCompleted = computed(() => {
+  if (!selectedDesire.value || !selectedDesire.value.tools) return false;
+  const { timeDays, timeHours, timeMinutes, tools } = selectedDesire.value;
+  const totalTime = timeDays * 24 * 60 + timeHours * 60 + timeMinutes;
+  const totalProbability = tools.reduce(
+    (sum, tool) => sum + (tool.probability || 0),
+    0,
+  );
+  return totalTime === 0 || totalProbability >= 100;
+});
+
+const hasTools = computed(() => {
+  return (
+    selectedDesire.value &&
+    selectedDesire.value.tools &&
+    selectedDesire.value.tools.length > 0
+  );
+});
+
+async function deleteDesireFromSidebar(desire) {
+  if (confirm(`Are you sure you want to delete "${desire.title}"?`)) {
+    try {
+      error.value = null;
+      await desireStore.deleteDesire(desire.id);
+      if (selectedDesire.value && selectedDesire.value.id === desire.id) {
+        selectedDesire.value = null;
+      }
+    } catch (err) {
+      error.value = 'Failed to delete desire. Please try again.';
+      console.error('Error deleting desire:', err);
+    }
+  }
+}
+
+// Update the newDesire function to initialize tools as an empty array
+const newDesire = () => {
+  selectedDesire.value = {
+    title: 'New Desire',
+    image: '',
+    timeDays: 0,
+    timeHours: 0,
+    timeMinutes: 0,
+    tools: [],
+  };
+  isEditing.value = true;
+};
+
+// Update the selectDesire function to ensure tools is always an array
+const selectDesire = (desire) => {
+  selectedDesire.value = reactive(
+    JSON.parse(
+      JSON.stringify({
+        ...desire,
+        tools: desire.tools || [],
+      }),
+    ),
+  );
+  isEditing.value = false;
+  selectedTool.value = null;
+  selectedAtomPlacementIndex.value = null;
+  updateOppositeOutcomeProbability();
+
+  // Force reactivity update
+  nextTick(() => {
+    if (selectedDesire.value && selectedDesire.value.tools) {
+      selectedDesire.value.tools = [...selectedDesire.value.tools];
+    }
+  });
+};
+
+const updateOppositeOutcomeProbability = () => {
+  if (selectedDesire.value && selectedDesire.value.tools) {
+    const totalProbability = selectedDesire.value.tools.reduce(
+      (sum, tool) => sum + (tool.probability || 0),
+      0,
+    );
+    oppositeOutcomeProbability.value = Math.max(0, 100 - totalProbability);
+  } else {
+    oppositeOutcomeProbability.value = 100;
+  }
+};
+
+const removeTool = (index) => {
+  selectedDesire.value.tools.splice(index, 1);
+};
+
+const selectAtomPlacement = (index) => {
+  selectedAtomPlacementIndex.value =
+    selectedAtomPlacementIndex.value === index ? null : index;
+};
+
+const removeAtomPlacement = (tool, index) => {
+  tool.atomPlacements.splice(index, 1);
+};
+const removeForce = (placement, index) => {
+  placement.forces.splice(index, 1);
+};
+
+const addTool = () => {
+  if (!selectedDesire.value.tools) {
+    selectedDesire.value.tools = [];
+  }
+  selectedDesire.value.tools.push({
+    name: 'New Tool',
+    probability: 0,
+    atomPlacements: [],
+    hypothesis: { description: '', isSuccessful: false },
+  });
+  selectTool(
+    selectedDesire.value.tools[selectedDesire.value.tools.length - 1],
+  );
+};
+
+const addAtomPlacement = () => {
+  if (selectedTool.value) {
+    if (!selectedTool.value.atomPlacements) {
+      selectedTool.value.atomPlacements = [];
+    }
+    selectedTool.value.atomPlacements.push({
+      beginning: 'Start',
+      end: 'End',
+      forces: [],
+    });
+    selectAtomPlacement(selectedTool.value.atomPlacements.length - 1);
+  }
+};
+
+const addForce = () => {
+  if (
+    selectedAtomPlacementIndex.value !== null &&
+    newForce.value.trim() !== ''
+  ) {
+    selectedTool.value.atomPlacements[
+      selectedAtomPlacementIndex.value
+    ].forces.push({
+      description: newForce.value.trim(),
+    });
+    newForce.value = '';
+  }
+};
+
+const cancelEdit = () => {
+  if (selectedDesire.value.id) {
+    // If editing an existing desire, revert changes
+    const originalDesire = desires.value.find(
+      (d) => d.id === selectedDesire.value.id,
+    );
+    selectedDesire.value = JSON.parse(JSON.stringify(originalDesire));
+  } else {
+    // If creating a new desire, clear the form
+    selectedDesire.value = null;
+  }
+  isEditing.value = false;
+};
+
+const saveDesire = async () => {
+  try {
+    error.value = null;
+    editLoading.value = true;
+    let desireToSave = {
+      ...selectedDesire.value,
+      timeDays: Number(selectedDesire.value.timeDays),
+      timeHours: Number(selectedDesire.value.timeHours),
+      timeMinutes: Number(selectedDesire.value.timeMinutes),
+      tools: selectedDesire.value.tools.map((tool) => ({
+        name: tool.name,
+        probability: Number(tool.probability),
+        atomPlacements: tool.atomPlacements.map((ap) => ({
+          beginning: ap.beginning,
+          end: ap.end,
+          forces: ap.forces.map((force) => ({
+            description:
+              typeof force === 'string'
+                ? force
+                : typeof force.description === 'object'
+                ? force.description.description || ''
+                : force.description || '',
+          })),
+        })),
+        hypothesis: tool.hypothesis
+          ? {
+              description: tool.hypothesis.description || '',
+              isSuccessful: tool.hypothesis.isSuccessful || false,
+            }
+          : undefined,
+      })),
+    };
+    if (selectedDesire.value.id) {
+      await desireStore.updateDesire(
+        selectedDesire.value.id,
+        desireToSave,
+      );
+    } else {
+      const newDesire = await desireStore.addDesire(desireToSave);
+      selectedDesire.value.id = newDesire.id;
+    }
+    await desireStore.fetchDesires();
+    selectDesire(selectedDesire.value); // Re-select the desire to refresh the view
+    isEditing.value = false;
+  } catch (err) {
+    error.value = 'Failed to save desire. Please try again.';
+    console.error('Error saving desire:', err);
+  } finally {
+    editLoading.value = false;
+  }
+};
+
+const selectTool = (tool) => {
+  if (selectedTool.value === tool) {
+    selectedTool.value = null;
+    selectedAtomPlacementIndex.value = null;
+  } else {
+    selectedTool.value = tool;
+    atomPlacements.value = tool.atomPlacements || [];
+    forces.value = {};
+    hypothesis.value = tool.hypothesis ? tool.hypothesis.description : '';
+    hypothesisSuccess.value = tool.hypothesis
+      ? tool.hypothesis.isSuccessful
+      : false;
+    selectedAtomPlacementIndex.value = null;
+  }
+};
+
+const saveHypothesis = async () => {
+  if (selectedTool.value) {
+    selectedTool.value.hypothesis = {
+      description: hypothesis.value.trim(),
+      isSuccessful: hypothesisSuccess.value,
+    };
+    await saveDesire();
+    console.log('Hypothesis saved:', selectedTool.value.hypothesis);
+  }
+};
 
 const isUserDataAvailable = () => {
   if (process.client) {
@@ -417,33 +877,27 @@ onMounted(() => {
   if (isLoggedIn.value) {
     desireStore.fetchDesires();
   }
+  if (desireStore.desires.length > 0) {
+    selectDesire(desireStore.desires[0]);
+  }
 });
-
-function selectDesire(desire) {
-  selectedDesire.value = JSON.parse(JSON.stringify(desire));
-  isEditing.value = false;
-}
-
-function newDesire() {
-  selectedDesire.value = {
-    title: 'New Desire',
-    image: '',
-    timeDays: 0,
-    timeHours: 0,
-    timeMinutes: 0,
-    tools: [],
-  };
-  isEditing.value = true;
-}
 
 async function toggleEditMode() {
   if (!isEditing.value) {
     editLoading.value = true;
     try {
-      const updatedDesire = await desireStore.fetchDesire(
-        selectedDesire.value.id,
-      );
-      selectedDesire.value = JSON.parse(JSON.stringify(updatedDesire));
+      if (selectedDesire.value && selectedDesire.value.id) {
+        const updatedDesire = await desireStore.fetchDesire(
+          selectedDesire.value.id,
+        );
+        if (updatedDesire) {
+          selectedDesire.value = JSON.parse(JSON.stringify(updatedDesire));
+        } else {
+          console.error('Failed to fetch updated desire');
+        }
+      } else {
+        console.error('No desire selected or desire has no ID');
+      }
     } catch (err) {
       console.error('Error fetching updated desire:', err);
     } finally {
@@ -453,38 +907,11 @@ async function toggleEditMode() {
   isEditing.value = !isEditing.value;
 }
 
-function addTool() {
-  selectedDesire.value.tools.push({ name: '', probability: 0 });
-}
-
-function removeTool(index) {
-  selectedDesire.value.tools.splice(index, 1);
-}
-
-const oppositeOutcomeProbability = computed(() => {
-  if (!selectedDesire.value) return 100;
-  const totalProbability = selectedDesire.value.tools.reduce(
-    (sum, tool) => sum + tool.probability,
-    0,
-  );
-  return Math.max(0, 100 - totalProbability);
-});
-
 const formattedTime = computed(() => {
   if (!selectedDesire.value) return '';
   const { timeDays, timeHours, timeMinutes } = selectedDesire.value;
   return `${timeDays}d ${timeHours}h ${timeMinutes}m`;
 });
-
-const isDesireCompleted = (desire) => {
-  const totalTime =
-    desire.timeDays * 24 * 60 + desire.timeHours * 60 + desire.timeMinutes;
-  const totalProbability = desire.tools.reduce(
-    (sum, tool) => sum + tool.probability,
-    0,
-  );
-  return totalTime === 0 || totalProbability >= 100;
-};
 
 const isCompleted = computed(() => {
   if (!selectedDesire.value) return false;
@@ -495,10 +922,6 @@ const isCompleted = computed(() => {
     0,
   );
   return totalTime === 0 || totalProbability >= 100;
-});
-
-const hasTools = computed(() => {
-  return selectedDesire.value && selectedDesire.value.tools.length > 0;
 });
 
 const hourHandStyle = computed(() => {
@@ -534,59 +957,6 @@ const minuteHandStyle = computed(() => {
   };
 });
 
-async function saveDesire() {
-  try {
-    error.value = null;
-    editLoading.value = true;
-    let desireToSave = {
-      ...selectedDesire.value,
-      timeDays: Number(selectedDesire.value.timeDays),
-      timeHours: Number(selectedDesire.value.timeHours),
-      timeMinutes: Number(selectedDesire.value.timeMinutes),
-      tools: selectedDesire.value.tools.map((tool) => ({
-        ...tool,
-        probability: Number(tool.probability),
-      })),
-    };
-
-    const totalTime =
-      desireToSave.timeDays * 24 * 60 +
-      desireToSave.timeHours * 60 +
-      desireToSave.timeMinutes;
-    const totalProbability = desireToSave.tools.reduce(
-      (sum, tool) => sum + tool.probability,
-      0,
-    );
-
-    if (totalTime === 0 || totalProbability >= 100) {
-      desireToSave.timeDays = 0;
-      desireToSave.timeHours = 0;
-      desireToSave.timeMinutes = 0;
-      desireToSave.tools = desireToSave.tools.map((tool) => ({
-        ...tool,
-        probability: 0,
-      }));
-    }
-
-    if (selectedDesire.value.id) {
-      await desireStore.updateDesire(
-        selectedDesire.value.id,
-        desireToSave,
-      );
-    } else {
-      const newDesire = await desireStore.addDesire(desireToSave);
-      selectedDesire.value.id = newDesire.id;
-    }
-    await desireStore.fetchDesires();
-    isEditing.value = false;
-  } catch (err) {
-    error.value = 'Failed to save desire. Please try again.';
-    console.error('Error saving desire:', err);
-  } finally {
-    editLoading.value = false;
-  }
-}
-
 async function deleteDesire() {
   if (selectedDesire.value.id) {
     try {
@@ -617,21 +987,6 @@ function handleFileUpload(event) {
 function editDesireFromSidebar(desire) {
   selectDesire(desire);
   isEditing.value = true;
-}
-
-async function deleteDesireFromSidebar(desire) {
-  if (confirm(`Are you sure you want to delete "${desire.title}"?`)) {
-    try {
-      error.value = null;
-      await desireStore.deleteDesire(desire.id);
-      if (selectedDesire.value && selectedDesire.value.id === desire.id) {
-        selectedDesire.value = null;
-      }
-    } catch (err) {
-      error.value = 'Failed to delete desire. Please try again.';
-      console.error('Error deleting desire:', err);
-    }
-  }
 }
 </script>
 
