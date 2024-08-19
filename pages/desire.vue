@@ -155,6 +155,24 @@
                 <p>Does it reduce time to 0s?</p>
               </div>
             </div>
+            <!-- New arrow and text -->
+            <div class="mt-2">
+              <svg
+                class="w-4 h-4 mx-auto"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 4v16m0 0l-4-4m4 4l4-4"
+                  stroke="black"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <p class="text-sm font-semibold">0s</p>
+            </div>
           </div>
 
           <!-- Existing Probability Column -->
@@ -187,14 +205,33 @@
                 <li
                   v-for="(tool, index) in selectedDesire.tools"
                   :key="index"
-                  class="mb-2"
+                  class="mb-2 text-xs inline-flex"
                 >
-                  {{ tool.name }}: {{ tool.probability }}%
+                  {{ tool.name }}:
+                  <p class="font-bold px-3">{{ tool.probability }}%</p>
                 </li>
               </ul>
             </div>
             <div v-else class="mt-4 text-red-500">
-              <span class="text-2xl mr-2">✗</span> None specified
+              <span class="text-2xl mr-2">✗</span> Unspecified
+            </div>
+            <!-- New arrow and text -->
+            <div class="mt-2">
+              <svg
+                class="w-4 h-4 mx-auto"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 4v16m0 0l-4-4m4 4l4-4"
+                  stroke="black"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <p class="text-sm font-semibold">0% oop</p>
             </div>
           </div>
         </div>
@@ -202,7 +239,6 @@
         <div v-else>
           <!-- Edit mode content -->
           <div v-if="editLoading" class="text-center py-4">
-            <p>Loading...</p>
             <p>Saving changes...</p>
           </div>
           <div v-else>
